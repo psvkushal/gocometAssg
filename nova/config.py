@@ -10,6 +10,9 @@ from pathlib import Path
 @dataclass(frozen=True)
 class Settings:
     gemini_api_key: str | None = field(default=None, repr=False)
+    openai_api_key: str | None = field(default=None, repr=False)
+    extractor_provider: str = "gemini"
+    validator_provider: str = "gemini"
     extractor_model: str = "gemini-2.5-pro"
     validator_model: str = "gemini-2.5-flash"
     confidence_threshold: float = 0.8
@@ -21,6 +24,9 @@ class Settings:
     storage_path: Path = Path("data/nova.sqlite3")
 
     def __post_init__(self) -> None:
+        for name in ("extractor_provider", "validator_provider"):
+            if getattr(self, name) not in {"gemini", "openai"}:
+                raise ValueError(f"{name} must be gemini or openai")
         for name in ("extractor_model", "validator_model"):
             value = getattr(self, name)
             if not isinstance(value, str) or not value.strip():
@@ -70,6 +76,9 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
         except ValueError:
             raise ValueError(f"{env_name} must be a positive integer") from None
     return Settings(
+        openai_api_key=env.get("OPENAI_API_KEY", "").strip() or None,
+        extractor_provider=env.get("NOVA_EXTRACTOR_PROVIDER", defaults.extractor_provider).strip(),
+        validator_provider=env.get("NOVA_VALIDATOR_PROVIDER", defaults.validator_provider).strip(),
         gemini_api_key=env.get("GEMINI_API_KEY", "").strip() or None,
         extractor_model=env.get("NOVA_EXTRACTOR_MODEL", defaults.extractor_model).strip(),
         validator_model=env.get("NOVA_VALIDATOR_MODEL", defaults.validator_model).strip(),

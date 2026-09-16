@@ -7,7 +7,7 @@ Currently available: document and customer-rule loading, extraction, validation,
 and routing connected through LangGraph, with SQLite checkpoints for resuming
 interrupted runs and SQLite storage for completed results. A minimal operator UI
 and command-line query interface are available.
-Live model behavior remains unverified.
+Live sample results and limitations are recorded in [samples/README.md](samples/README.md).
 
 ## Local setup
 
@@ -36,19 +36,22 @@ streamlit run nova/ui.py
 ```
 
 Upload one PDF, PNG, or JPEG, review/edit the customer rules, and click
-**Process document**. This makes live Gemini calls and uses API credits.
+**Process document**. This makes live model calls and uses API credits.
 The screen displays the run ID, extraction confidence/evidence, validation,
 decision, and any amendment draft. Download the original document for comparison.
 
-Keep the run ID to load its saved state later. After a processing failure, correct
+Select a saved document by its filename and run ID to load its saved state later. After a processing failure, correct
 the underlying problem and use **Resume run** to continue from the saved stage.
 For a replacement document or changed rules, start a new run instead. Loading a
-saved run and querying results do not call Gemini. Amendment drafts are not sent.
+saved run and querying results do not call models. Amendment drafts are not sent.
 
 ## Configuration
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
+| `OPENAI_API_KEY` | unset | Required when using an OpenAI provider |
+| `NOVA_EXTRACTOR_PROVIDER` | `gemini` | Internal selection: `gemini` or `openai` |
+| `NOVA_VALIDATOR_PROVIDER` | `gemini` | Internal selection: `gemini` or `openai` |
 | `GEMINI_API_KEY` | unset | Required for live Gemini extraction/validation; not needed for tests |
 | `NOVA_EXTRACTOR_MODEL` | `gemini-2.5-pro` | Model direction from the brief |
 | `NOVA_VALIDATOR_MODEL` | `gemini-2.5-flash` | Model direction from the brief |
@@ -59,6 +62,20 @@ saved run and querying results do not call Gemini. Amendment drafts are not sent
 | `NOVA_EXTRACTOR_MAX_OUTPUT_TOKENS` | `8192` | Extractor output-token budget |
 | `NOVA_VALIDATOR_MAX_OUTPUT_TOKENS` | `8192` | Validator output-token budget |
 | `NOVA_STORAGE_PATH` | `data/nova.sqlite3` | SQLite file path, relative to the working directory |
+
+Model selection is internal configuration, not an operator control. For the
+Gemini extraction / GPT validation combination, export:
+
+```bash
+export NOVA_EXTRACTOR_PROVIDER=gemini
+export NOVA_EXTRACTOR_MODEL=gemini-3.1-pro-preview
+export NOVA_VALIDATOR_PROVIDER=openai
+export NOVA_VALIDATOR_MODEL=gpt-5.4-mini
+```
+
+Use `gpt-5.4-nano` to evaluate the smaller validator. Both stages can use OpenAI
+when explicitly configured; image/PDF extraction through OpenAI still requires
+separate live evaluation. Saved runs resume with the current internal settings.
 
 Keep credentials in the ignored `.env` or the process environment.
 

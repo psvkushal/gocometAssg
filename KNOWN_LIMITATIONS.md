@@ -194,3 +194,20 @@ scope; drafting a request does not imply sending it.
 
 Update this document when a limitation is resolved or a new deliberate scope
 decision is agreed with the human developer.
+
+## GPT validator comparison
+
+GPT-5.4 nano can interpret rule-file instructions 9 and 10 (uncertainty handling
+and mismatch reporting) as independent document requirements. In the live
+comparison this produced extra UNCERTAIN assessments and, on a printed invoice,
+MATCH assessments with null found values rejected by the existing domain
+validator. Strict JSON schema constrains shape, not these semantic invariants.
+The comparison records failures; it does not silently coerce or retry them.
+Prompt/rule separation should be evaluated as a separate change before relying
+on nano. Company-name whitespace and incidental punctuation tolerance remain
+unspecified. See `docs/technical-writeup.md` for comparison scope/results.
+
+The saved-document selector scans checkpoint history and lists runs from the
+configured database only. Separate live-test databases are not merged into the
+operator database. Provider/model settings are not stored with older checkpoints;
+resuming uses current internal configuration.

@@ -452,3 +452,13 @@ implementation:
 
 The exact order may be adjusted when dependencies require it, but each
 change should remain small and independently reviewable.
+
+## Internal model configuration and operator selection
+
+Gemini and OpenAI adapters implement the shared provider contract. Extractor and
+Validator providers/models are configured independently via environment variables.
+GPT-5.4 nano and mini are candidates for internal Validator latency/quality
+comparison with identical saved extractions. Model selection is not exposed in
+the operator UI. Operators select supported query questions and saved documents
+(filename plus run ID) from dropdowns. Saved documents include interrupted runs.
+The technical diagram is maintained in `docs/technical-writeup.md`.

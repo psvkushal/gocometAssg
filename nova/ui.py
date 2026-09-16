@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import sqlite3
+from time import perf_counter
 from tempfile import TemporaryDirectory
 
 import streamlit as st
@@ -10,7 +11,7 @@ from nova.persistence.checkpoints import open_pipeline
 from nova.config import Settings, load_settings
 from nova.documents import load_document
 from nova.agents.extractor import Extractor
-from nova.models.gemini import GeminiProvider
+from nova.models.factory import create_provider
 from nova.pipeline import PipelineInput, PipelineState
 from nova.query import SUPPORTED_QUESTIONS, UnsupportedQuestion, ask
 from nova.rules import load_customer_rules
@@ -67,11 +68,13 @@ def run_action(settings: Settings, run_id: str, *, inputs: PipelineInput | None 
     st.session_state.pop("run_error", None)
     st.session_state["active_run_id"] = run_id
     st.text(f"Run ID: {run_id}")
-    provider = GeminiProvider(settings)
+    extractor_provider = create_provider(settings.extractor_provider, settings)
+    validator_provider = create_provider(settings.validator_provider, settings)
+    started = perf_counter()
     with st.status("Processing document…" if inputs or resume else "Loading run…") as status:
         try:
-            with open_pipeline(settings.storage_path, Extractor(provider, settings),
-                               Validator(provider, settings)) as pipeline:
+            with open_pipeline(settings.storage_path, Extractor(extractor_provider, settings),
+                               Validator(validator_provider, settings)) as pipeline:
                 try:
                     if inputs is not None:
                         state = pipeline.start(inputs)
@@ -101,8 +104,11 @@ def run_action(settings: Settings, run_id: str, *, inputs: PipelineInput | None 
             message = f"Operation failed ({type(error).__name__}). "
             if isinstance(error, KeyError):
                 message += "No saved run was found for this ID."
-            elif not settings.gemini_api_key and (inputs is not None or resume):
-                message += "Configure GEMINI_API_KEY before running model stages."
+            elif (inputs is not None or resume) and (
+                ("openai" in {settings.extractor_provider, settings.validator_provider} and not settings.openai_api_key)
+                or ("gemini" in {settings.extractor_provider, settings.validator_provider} and not settings.gemini_api_key)
+            ):
+                message += "Configure the API key for each selected provider."
             else:
                 message += "The document could not be processed or saved. Check the document, model configuration, and connection before retrying."
             st.session_state["run_error"] = message
@@ -110,6 +116,7 @@ def run_action(settings: Settings, run_id: str, *, inputs: PipelineInput | None 
         else:
             status.update(label="Run loaded" if inputs is None and not resume else "Review complete", state="complete")
 
+    st.caption(f"Operation took {perf_counter() - started:.1f} seconds")
 
 def main() -> None:
     st.set_page_config(page_title="Nova document review", layout="wide")
@@ -145,26 +152,30 @@ def main() -> None:
             else:
                 inputs = PipelineInput(document=document, rules=rules)
                 run_action(settings, inputs.run_id, inputs=inputs)
+    try:
+        with open_pipeline(settings.storage_path,
+                           Extractor(create_provider(settings.extractor_provider, settings), settings),
+                           Validator(create_provider(settings.validator_provider, settings), settings)) as pipeline:
+            saved_runs = pipeline.list_runs()
+    except (sqlite3.Error, OSError):
+        saved_runs = {}
+        st.error("Could not list saved documents. Check the database path.")
     with st.form("saved_run"):
-        run_id = st.text_input("Saved run ID", value=st.session_state.get("active_run_id", ""))
-        load = st.form_submit_button("Load saved run")
-        resume = st.form_submit_button("Resume run")
-    if load or resume:
-        if run_id.strip():
-            run_action(settings, run_id.strip(), resume=resume)
-        else:
-            st.error("Enter a saved run ID.")
+        run_id = st.selectbox("Saved document", list(saved_runs),
+                              format_func=lambda value: saved_runs[value],
+                              placeholder="No saved documents yet")
+        load = st.form_submit_button("Load saved run", disabled=not saved_runs)
+        resume = st.form_submit_button("Resume run", disabled=not saved_runs)
+    if (load or resume) and run_id:
+        run_action(settings, run_id, resume=resume)
     if st.session_state.get("run_error"):
         st.error(st.session_state["run_error"])
     if "review_state" in st.session_state:
         show_state(st.session_state["review_state"])
     st.subheader("Ask about stored results")
     st.caption("Answers cover completed results across all dates and customers.")
-    with st.expander("Supported questions"):
-        for question in SUPPORTED_QUESTIONS:
-            st.text(question)
     with st.form("query"):
-        question = st.text_input("Question", placeholder=SUPPORTED_QUESTIONS[0])
+        question = st.selectbox("Question", SUPPORTED_QUESTIONS)
         ask_clicked = st.form_submit_button("Ask")
     if ask_clicked:
         try:

@@ -40,6 +40,23 @@ class CheckpointedPipeline:
             raise KeyError(f"Unknown pipeline run: {run_id}")
         return snapshot
 
+    def list_runs(self) -> dict[str, str]:
+        """Latest document label per run, including interrupted runs (local POC)."""
+        runs = {}
+        # Saver lists newest checkpoints first; skip earlier versions of each run.
+        for saved in self.graph.checkpointer.list(None):
+            config = saved.config["configurable"]
+            run_id = config["thread_id"]
+            if config.get("checkpoint_ns", "") or run_id in runs:
+                continue
+            values = saved.checkpoint["channel_values"]
+            document = values.get("document")
+            if document is None:
+                continue
+            stage = values.get("last_completed_stage") or "not completed"
+            runs[run_id] = f"{document.filename} — {run_id} — {stage}"
+        return runs
+
     def start(self, inputs: PipelineInput) -> PipelineState:
         config = self._config(inputs.run_id)
         if self.graph.get_state(config).values:

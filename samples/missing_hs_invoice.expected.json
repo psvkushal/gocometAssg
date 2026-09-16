@@ -1,0 +1,12 @@
+{
+  "fields": {
+    "Consignee Name": "RheinTech Distribution GmbH",
+    "Port of Loading": "Chennai, India",
+    "Port of Discharge": "Hamburg, Germany",
+    "Incoterms": "FOB",
+    "Description of Goods": "Laptop computers",
+    "Gross Weight": "1,200 kg",
+    "Invoice Number": "INV1001"
+  },
+  "expected_outcome": "HUMAN_REVIEW"
+}
