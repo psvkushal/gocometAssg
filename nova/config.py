@@ -14,6 +14,10 @@ class Settings:
     validator_model: str = "gemini-2.5-flash"
     confidence_threshold: float = 0.8
     max_retries: int = 2
+    max_document_bytes: int = 10 * 1024 * 1024
+    model_timeout_ms: int = 120_000
+    extractor_max_output_tokens: int = 8192
+    validator_max_output_tokens: int = 8192
     storage_path: Path = Path("data/nova.sqlite3")
 
     def __post_init__(self) -> None:
@@ -30,6 +34,11 @@ class Settings:
             raise ValueError("confidence_threshold must be between 0 and 1")
         if type(self.max_retries) is not int or self.max_retries < 0:
             raise ValueError("max_retries must be a non-negative integer")
+        if type(self.max_document_bytes) is not int or self.max_document_bytes <= 0:
+            raise ValueError("max_document_bytes must be a positive integer")
+        for name in ("model_timeout_ms", "extractor_max_output_tokens", "validator_max_output_tokens"):
+            if type(getattr(self, name)) is not int or getattr(self, name) <= 0:
+                raise ValueError(f"{name} must be a positive integer")
         if not isinstance(self.storage_path, Path) or self.storage_path == Path("."):
             raise ValueError("storage_path must be a file path")
 
@@ -47,13 +56,26 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
     except ValueError:
         raise ValueError("NOVA_MAX_RETRIES must be a non-negative integer") from None
     storage_path = env.get("NOVA_STORAGE_PATH", str(defaults.storage_path)).strip()
+    try:
+        max_document_bytes = int(env.get("NOVA_MAX_DOCUMENT_BYTES", str(defaults.max_document_bytes)))
+    except ValueError:
+        raise ValueError("NOVA_MAX_DOCUMENT_BYTES must be a positive integer") from None
     if not storage_path:
         raise ValueError("NOVA_STORAGE_PATH must be a file path")
+    model_limits = {}
+    for name in ("model_timeout_ms", "extractor_max_output_tokens", "validator_max_output_tokens"):
+        env_name = f"NOVA_{name.upper()}"
+        try:
+            model_limits[name] = int(env.get(env_name, str(getattr(defaults, name))))
+        except ValueError:
+            raise ValueError(f"{env_name} must be a positive integer") from None
     return Settings(
         gemini_api_key=env.get("GEMINI_API_KEY", "").strip() or None,
         extractor_model=env.get("NOVA_EXTRACTOR_MODEL", defaults.extractor_model).strip(),
         validator_model=env.get("NOVA_VALIDATOR_MODEL", defaults.validator_model).strip(),
         confidence_threshold=threshold,
         max_retries=retries,
+        max_document_bytes=max_document_bytes,
         storage_path=Path(storage_path).expanduser(),
+        **model_limits,
     )

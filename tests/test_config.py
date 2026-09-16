@@ -20,6 +20,7 @@ class SettingsTests(unittest.TestCase):
             "NOVA_VALIDATOR_MODEL": "validator-test",
             "NOVA_CONFIDENCE_THRESHOLD": "0.9",
             "NOVA_MAX_RETRIES": "0",
+            "NOVA_MAX_DOCUMENT_BYTES": "1024",
             "NOVA_STORAGE_PATH": "/tmp/nova-test.sqlite3",
         })
         self.assertEqual(settings, Settings(
@@ -28,6 +29,7 @@ class SettingsTests(unittest.TestCase):
             validator_model="validator-test",
             confidence_threshold=0.9,
             max_retries=0,
+            max_document_bytes=1024,
             storage_path=Path("/tmp/nova-test.sqlite3"),
         ))
         self.assertNotIn("test-secret", repr(settings))
@@ -41,6 +43,10 @@ class SettingsTests(unittest.TestCase):
         cases = {
             "NOVA_CONFIDENCE_THRESHOLD": ["-0.1", "1.1", "nan", "inf", "", "bad"],
             "NOVA_MAX_RETRIES": ["-1", "1.5", "", "bad"],
+            "NOVA_MAX_DOCUMENT_BYTES": ["0", "-1", "1.5", "", "bad"],
+            "NOVA_MODEL_TIMEOUT_MS": ["0", "-1", "1.5", "bad"],
+            "NOVA_EXTRACTOR_MAX_OUTPUT_TOKENS": ["0", "-1", "1.5", "bad"],
+            "NOVA_VALIDATOR_MAX_OUTPUT_TOKENS": ["0", "-1", "1.5", "bad"],
             "NOVA_EXTRACTOR_MODEL": ["", " "],
             "NOVA_VALIDATOR_MODEL": ["", " "],
             "NOVA_STORAGE_PATH": ["", " ", "."],

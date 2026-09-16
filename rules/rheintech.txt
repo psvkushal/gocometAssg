@@ -1,0 +1,12 @@
+Customer: RheinTech Distribution GmbH
+
+1. The consignee on the invoice must be RheinTech Distribution GmbH.
+2. The HS code must contain exactly 8 numeric digits.
+3. The port of loading must be either Chennai, India or Mumbai, India.
+4. The port of discharge must be Hamburg, Germany.
+5. Only FOB or CIF Incoterms are accepted.
+6. The description of goods must indicate that the shipment contains laptop computers.
+7. Gross shipment weight must be between 1,000 kg and 1,500 kg.
+8. The invoice number must start with INV and be followed by numeric characters.
+9. If a required field is missing or cannot be confidently evaluated, it must be marked UNCERTAIN; it must never be silently treated as a match.
+10. If a field violates a rule, return MISMATCH with the found value, expected requirement, and concise reason.
