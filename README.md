@@ -92,7 +92,7 @@ saved run and querying results do not call models. Amendment drafts are not sent
 | `NOVA_MODEL_TIMEOUT_MS` | `120000` | Model request timeout in milliseconds per attempt |
 | `NOVA_EXTRACTOR_MAX_OUTPUT_TOKENS` | `8192` | Extractor output-token budget |
 | `NOVA_VALIDATOR_MAX_OUTPUT_TOKENS` | `8192` | Validator output-token budget |
-| `NOVA_STORAGE_PATH` | `data/nova.sqlite3` | SQLite file path, relative to the working directory |
+| `NOVA_STORAGE_PATH` | `database/nova.sqlite3` | SQLite file path, relative to the working directory |
 
 Model selection is internal configuration, not an operator control. For the
 Gemini extraction / GPT validation combination, export:
@@ -108,6 +108,9 @@ Use `gpt-5.4-nano` to evaluate the smaller validator. Both stages can use OpenAI
 when explicitly configured; image/PDF extraction through OpenAI still requires
 separate live evaluation. Saved runs resume with the current internal settings.
 
+SQLite databases are created automatically under `database/`; `test_samples/` holds local
+test samples and experiment outputs. Both directories are ignored by Git.
+
 Keep credentials in the ignored `.env` or the process environment.
 
 ## Query stored results
@@ -120,7 +123,7 @@ After storing review results, ask one of these questions:
 - Which fields most frequently failed validation?
 
 ```bash
-python -m nova.query --database data/nova.sqlite3 "How many documents had mismatches?"
+python -m nova.query --database database/nova.sqlite3 "How many documents had mismatches?"
 ```
 
 Answers cover all stored results. Date and customer filters are not supported

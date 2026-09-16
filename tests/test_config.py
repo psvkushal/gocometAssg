@@ -11,7 +11,7 @@ class SettingsTests(unittest.TestCase):
         settings = load_settings({})
         self.assertEqual(settings, Settings())
         self.assertIsNone(settings.gemini_api_key)
-        self.assertEqual(settings.storage_path, Path("data/nova.sqlite3"))
+        self.assertEqual(settings.storage_path, Path("database/nova.sqlite3"))
 
     def test_environment_overrides(self):
         settings = load_settings({

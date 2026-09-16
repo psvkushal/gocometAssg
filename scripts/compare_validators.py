@@ -16,7 +16,7 @@ from nova.persistence.storage import SQLiteResultStore
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--report', type=Path, required=True, help='Prior live report containing database and case run IDs')
-    parser.add_argument('--output', type=Path, default=Path('data/validator_comparison.json'))
+    parser.add_argument('--output', type=Path, default=Path('test_samples/validator_comparison.json'))
     parser.add_argument("--models", nargs="+", choices=["gpt-5.4-nano", "gpt-5.4-mini", "gemini-3.6-flash"],
                         default=["gpt-5.4-nano", "gpt-5.4-mini", "gemini-3.6-flash"])
     args = parser.parse_args()

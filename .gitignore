@@ -7,5 +7,6 @@ dist/
 .env
 .env.*
 !.env.example
-data/
+test_samples/
 .pytest_cache/
+database/

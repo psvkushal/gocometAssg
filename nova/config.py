@@ -21,7 +21,7 @@ class Settings:
     model_timeout_ms: int = 120_000
     extractor_max_output_tokens: int = 8192
     validator_max_output_tokens: int = 8192
-    storage_path: Path = Path("data/nova.sqlite3")
+    storage_path: Path = Path("database/nova.sqlite3")
 
     def __post_init__(self) -> None:
         for name in ("extractor_provider", "validator_provider"):

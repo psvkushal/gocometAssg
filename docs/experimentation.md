@@ -1,7 +1,7 @@
 # Experimentation
 
 All paths below are relative to the repository root. Experiments were performed
-on 2026-09-16. Local outputs and credentials under `data/` and `.env` are ignored
+on 2026-09-16. Local outputs and credentials under `test_samples/` and `.env` are ignored
 by Git. The active setup remains Gemini extraction and GPT-5.4 mini validation.
 
 ## Sample fixtures
@@ -57,8 +57,8 @@ results were retrieved successfully from storage.
 Queries over the isolated test database returned one approval, one human review,
 and one document with mismatches; Incoterms was the only failing field (count 1).
 
-Local results: `data/live_suite_4e5cedc9.sqlite3`.
-Full model outputs and check results: `data/live_suite_report.json`.
+Local results: `database/live_suite_4e5cedc9.sqlite3`.
+Full model outputs and check results: `test_samples/live_suite_report.json`.
 These local artifacts and credentials are ignored by Git.
 
 To repeat manually, launch the UI with the model overrides above, upload each
@@ -88,21 +88,21 @@ and invoice number PO20260916A. Both amendment drafts included every discrepancy
 Stored results were retrieved successfully. Queries returned one approval, zero
 human reviews, and two documents with mismatches, with six distinct failing fields.
 
-Local database: `data/user_live_2ca0962f.sqlite3`.
-Full outputs: `data/user_live_report.json` (ignored by Git).
+Local database: `database/user_live_2ca0962f.sqlite3`.
+Full outputs: `test_samples/user_live_report.json` (ignored by Git).
 These three documents cover approval and mismatches; none is an uncertainty case.
 
 ## Image attempts — 2026-09-16
 
-Inspected `data/sample01.jpeg` through `data/sample06.jpeg`: two handwritten
+Inspected `test_samples/sample01.jpeg` through `test_samples/sample06.jpeg`: two handwritten
 invoices and four photos of printed invoices. Each was submitted to the live
 pipeline using Gemini 3.1 Pro Preview for extraction. All six requests failed
 with HTTP 429 RESOURCE_EXHAUSTED: Google reported that the project's monthly
 spending cap had been exceeded. No extraction or validation results were produced;
 image accuracy and routing could not be evaluated in that attempt.
 
-Local checkpoints: `data/image_live_9424203d.sqlite3`.
-Failure details and run IDs: `data/image_live_report.json` (ignored by Git).
+Local checkpoints: `database/image_live_9424203d.sqlite3`.
+Failure details and run IDs: `test_samples/image_live_report.json` (ignored by Git).
 The following retry resumed these saved runs after the spend-cap update.
 
 ## Image retry results — 2026-09-16
@@ -114,12 +114,12 @@ was not independently established. These runs preceded the OpenAI provider integ
 
 | Image | Outcome | Mismatched assessments |
 | --- | --- | --- |
-| `data/sample01.jpeg` | AMENDMENT_REQUEST | 6 |
-| `data/sample02.jpeg` | AMENDMENT_REQUEST | 4 |
-| `data/sample03.jpeg` | AMENDMENT_REQUEST | 1 |
-| `data/sample04.jpeg` | AMENDMENT_REQUEST | 1 |
-| `data/sample05.jpeg` | AUTO_APPROVE | 0 |
-| `data/sample06.jpeg` | AMENDMENT_REQUEST | 5 |
+| `test_samples/sample01.jpeg` | AMENDMENT_REQUEST | 6 |
+| `test_samples/sample02.jpeg` | AMENDMENT_REQUEST | 4 |
+| `test_samples/sample03.jpeg` | AMENDMENT_REQUEST | 1 |
+| `test_samples/sample04.jpeg` | AMENDMENT_REQUEST | 1 |
+| `test_samples/sample05.jpeg` | AUTO_APPROVE | 0 |
+| `test_samples/sample06.jpeg` | AMENDMENT_REQUEST | 5 |
 
 All images yielded 18 fields and completed result storage. The extracted names
 and values for printed images 03–06 exactly matched the corresponding previously
@@ -148,7 +148,7 @@ attempts above; the report now includes successful outputs and refreshed queries
 
 ## Validator timing comparison
 
-Run `scripts/compare_validators.py --report data/image_live_report.json` with API
+Run `scripts/compare_validators.py --report test_samples/image_live_report.json` with API
 keys exported. This makes paid requests for GPT-5.4 nano, GPT-5.4 mini, and Gemini
 3.6 Flash against identical saved extraction data and rules. It records elapsed
 validator time and complete assessments in an ignored JSON report. Extraction is
@@ -188,7 +188,7 @@ The semantic-equivalence rule change was reverted at the user's request. The
 original consignee requirement is restored; company-name variants are not
 explicitly permitted. The temporary experiment accepted `Rhein Tech` in both
 handwritten samples, but those results do not represent the current rule set.
-Historical diagnostic output remains in `data/semantic_rule_check.json`.
+Historical diagnostic output remains in `test_samples/semantic_rule_check.json`.
 
 The latest operator run inspected during this change (sample01.jpeg, run
 48a5f617-fe21-4c6f-b603-68cc39d61590) spanned approximately 17.4 seconds between
@@ -209,9 +209,9 @@ At the user's request, stopped tuning and restored the original Validator prompt
 The restored mini setup passed all three controls: AUTO_APPROVE, AMENDMENT_REQUEST,
 and HUMAN_REVIEW, with a median validator time of 5.09 seconds. All 50 offline
 tests passed. The active configuration remains Gemini extraction + GPT-5.4 mini
-validation. Local experiment reports: `data/nano_prompt_v2*.json`,
-`data/nano_prompt_v3*.json`, `data/nano_prompt_final_check.json`,
-`data/mini_prompt_v3_controls.json`, and `data/mini_restored_prompt_check.json`.
+validation. Local experiment reports: `test_samples/nano_prompt_v2*.json`,
+`test_samples/nano_prompt_v3*.json`, `test_samples/nano_prompt_final_check.json`,
+`test_samples/mini_prompt_v3_controls.json`, and `test_samples/mini_restored_prompt_check.json`.
 The comparison script now supports `--models` to select internal experiment models;
 use a new output path for each prompt experiment to avoid reusing prior results.
 
@@ -220,16 +220,16 @@ use a new output path for each prompt experiment to avoid reusing prior results.
 One fresh extraction call per model/document, identical source files and extraction
 prompt, no retries. Model-default reasoning is used; OpenAI image detail is high.
 The adapters use their respective native image/PDF input mechanisms. No Validator
-calls are included in these timings. Full local results: `data/extractor_comparison.json`.
+calls are included in these timings. Full local results: `test_samples/extractor_comparison.json`.
 
 | Document | GPT-5.4 mini | Gemini 3.1 Pro Preview |
 | --- | --- | --- |
-| `data/sample01.jpeg` | 5.12 s | 10.55 s |
-| `data/sample02.jpeg` | 4.35 s | 8.09 s |
-| `data/sample03.jpeg` | 5.61 s | 8.08 s |
-| `data/sample04.jpeg` | 6.26 s | 13.39 s |
-| `data/sample05.jpeg` | 4.90 s | 13.25 s |
-| `data/sample06.jpeg` | 9.51 s | 7.95 s |
+| `test_samples/sample01.jpeg` | 5.12 s | 10.55 s |
+| `test_samples/sample02.jpeg` | 4.35 s | 8.09 s |
+| `test_samples/sample03.jpeg` | 5.61 s | 8.08 s |
+| `test_samples/sample04.jpeg` | 6.26 s | 13.39 s |
+| `test_samples/sample05.jpeg` | 4.90 s | 13.25 s |
+| `test_samples/sample06.jpeg` | 9.51 s | 7.95 s |
 | `01_invoice_valid.pdf` | 4.68 s | 18.14 s |
 | Median across seven documents | 5.12 s | 10.55 s |
 
