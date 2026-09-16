@@ -11,10 +11,10 @@ from pathlib import Path
 class Settings:
     gemini_api_key: str | None = field(default=None, repr=False)
     openai_api_key: str | None = field(default=None, repr=False)
-    extractor_provider: str = "gemini"
-    validator_provider: str = "gemini"
-    extractor_model: str = "gemini-2.5-pro"
-    validator_model: str = "gemini-2.5-flash"
+    extractor_provider: str = "openai"
+    validator_provider: str = "openai"
+    extractor_model: str = "gpt-5.4-mini"
+    validator_model: str = "gpt-5.4-mini"
     confidence_threshold: float = 0.8
     max_retries: int = 2
     max_document_bytes: int = 10 * 1024 * 1024

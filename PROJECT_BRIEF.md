@@ -462,3 +462,7 @@ comparison with identical saved extractions. Model selection is not exposed in
 the operator UI. Operators select supported query questions and saved documents
 (filename plus run ID) from dropdowns. Saved documents include interrupted runs.
 The technical diagram is maintained in `docs/technical-writeup.md`.
+
+Current default: GPT-5.4 mini for both extraction and validation, selected after
+the local comparisons. The Gemini model directions above describe the original
+POC plan; Gemini remains an explicitly configurable alternative.

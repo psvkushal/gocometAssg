@@ -16,7 +16,7 @@ UI_PATH = Path(__file__).resolve().parent.parent / "nova" / "ui.py"
 class UITests(unittest.TestCase):
     def test_upload_review_and_query_use_pipeline_results(self):
         with TemporaryDirectory() as directory:
-            settings = Settings(validator_provider="openai", validator_model="gpt-5.4-nano",
+            settings = Settings(extractor_provider="gemini", validator_provider="openai", validator_model="gpt-5.4-nano",
                                 storage_path=Path(directory) / "nova.sqlite3")
             provider = ScriptedProvider(responses_for("EXW", 0.95, "MISMATCH"))
             with patch("nova.config.load_settings", return_value=settings), patch(
@@ -43,7 +43,7 @@ class UITests(unittest.TestCase):
 
     def test_failed_validation_is_visible_and_resumes_without_reextraction(self):
         with TemporaryDirectory() as directory:
-            settings = Settings(gemini_api_key="test-key", storage_path=Path(directory) / "nova.sqlite3")
+            settings = Settings(extractor_provider="gemini", validator_provider="gemini", gemini_api_key="test-key", storage_path=Path(directory) / "nova.sqlite3")
             extraction, validation = responses_for("FOB", 0.95, "MATCH")
             provider = ScriptedProvider([extraction, ModelResponseError("blocked response"), validation])
             with patch("nova.config.load_settings", return_value=settings), patch(

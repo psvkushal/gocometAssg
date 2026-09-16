@@ -2,7 +2,7 @@
 
 All paths below are relative to the repository root. Experiments were performed
 on 2026-09-16. Local outputs and credentials under `test_samples/` and `.env` are ignored
-by Git. The active setup remains Gemini extraction and GPT-5.4 mini validation.
+by Git. The active setup now uses GPT-5.4 mini for both extraction and validation.
 
 ## Sample fixtures
 
@@ -208,7 +208,7 @@ The expanded prompt also regressed mini on the clean control in one check.
 At the user's request, stopped tuning and restored the original Validator prompt.
 The restored mini setup passed all three controls: AUTO_APPROVE, AMENDMENT_REQUEST,
 and HUMAN_REVIEW, with a median validator time of 5.09 seconds. All 50 offline
-tests passed. The active configuration remains Gemini extraction + GPT-5.4 mini
+tests passed. At that point the active configuration remained Gemini extraction + GPT-5.4 mini
 validation. Local experiment reports: `test_samples/nano_prompt_v2*.json`,
 `test_samples/nano_prompt_v3*.json`, `test_samples/nano_prompt_final_check.json`,
 `test_samples/mini_prompt_v3_controls.json`, and `test_samples/mini_restored_prompt_check.json`.
@@ -249,7 +249,7 @@ an inference from the model's confidence. On sample02 mini read `INV 2028091602.
 (confidence 0.98), while Gemini read `INV2026091602.` (confidence 0.81).
 
 Mini matched the printed references and was correct on the user-confirmed
-handwritten disagreements. This small sample does not establish general accuracy. The active app remains on Gemini
-extraction and mini validation; no production/default model switch was made.
+handwritten disagreements. This small sample does not establish general accuracy. After the user confirmed mini's handwritten readings, both stages were switched
+to GPT-5.4 mini at the user's request.
 Reproduce with `scripts/compare_extractors.py DOCUMENT... --output NEW_REPORT.json`
 with credentials exported; each invocation makes fresh paid calls.
