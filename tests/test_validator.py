@@ -4,9 +4,9 @@ import unittest
 from pydantic import ValidationError
 
 from nova.config import Settings
-from nova.model import ModelRequest
+from nova.models.base import ModelRequest
 from nova.schemas import CustomerRules, ExtractionResult
-from nova.validator import Validator
+from nova.agents.validator import Validator
 
 
 RULES = CustomerRules(text="Only FOB or CIF Incoterms are accepted.", source="fixture")

@@ -2,7 +2,7 @@ import unittest
 
 from pydantic import ValidationError
 
-from nova.router import route
+from nova.agents.router import route
 from nova.schemas import RoutingDecision, RuleValidation, ValidationResult
 
 

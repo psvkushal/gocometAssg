@@ -237,7 +237,23 @@ contract with their own task details.
 Add LangGraph after the Validator service works to connect the stages and manage
 state/checkpoints. Provider selection does not replace LangGraph orchestration.
 
+Implementation status: the core LangGraph workflow connects Extractor, Validator,
+and Router with serializable state and stage updates. SQLite checkpoint helpers
+support resuming pending stages after reopening the database. The Storage stage
+saves completed review results into a separate queryable SQLite table. A bounded
+command-line query interface answers the four question types below. See
+`KNOWN_LIMITATIONS.md` for recovery boundaries and pending retry-count tracking.
+
 Use **structured handoffs**, not free-form agent-to-agent conversation.
+
+New `PipelineInput` objects generate a UUID run ID automatically. Operators do
+not choose IDs for new runs; load/resume uses the original saved ID. Explicit
+IDs remain available for deterministic fixtures and programmatic callers.
+
+Code organization: `nova/agents/` contains stage services and their prompts,
+`nova/models/` contains the shared provider contract and implementations, and
+`nova/persistence/` contains checkpoints and completed-result storage. Shared
+schemas and LangGraph wiring remain in `nova/schemas.py` and `nova/pipeline.py`.
 
 The pipeline state should be explicit and serializable, for example:
 

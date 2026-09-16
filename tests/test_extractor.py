@@ -4,8 +4,8 @@ from pydantic import ValidationError
 
 from nova.config import Settings
 from nova.documents import DocumentInput
-from nova.extractor import Extractor
-from nova.model import ModelRequest
+from nova.agents.extractor import Extractor
+from nova.models.base import ModelRequest
 
 
 class FakeProvider:

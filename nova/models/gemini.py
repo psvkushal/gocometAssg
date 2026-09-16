@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 
 from nova.config import Settings
-from nova.model import ModelRequest, ModelResponseError
+from nova.models.base import ModelRequest, ModelResponseError
 
 
 class GeminiProvider:

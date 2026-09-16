@@ -6,8 +6,8 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field
 
 from nova.config import Settings
-from nova.model import ModelProvider, ModelRequest
-from nova.prompts import VALIDATION_INSTRUCTIONS
+from nova.models.base import ModelProvider, ModelRequest
+from nova.agents.prompts import VALIDATION_INSTRUCTIONS
 from nova.schemas import CustomerRules, ExtractionResult, RuleValidation, ValidationResult
 
 

@@ -7,7 +7,13 @@ name = "gocomet-nova"
 version = "0.1.0"
 description = "Single-document trade review proof of concept"
 requires-python = ">=3.11"
-dependencies = ["pydantic>=2.12,<3", "google-genai>=1.75,<2"]
+dependencies = [
+    "pydantic>=2.12,<3",
+    "google-genai>=1.75,<2",
+    "langgraph>=1.2,<2",
+    "langgraph-checkpoint-sqlite>=3.1.1,<4",
+    "streamlit>=1.64,<2",
+]
 
 [tool.setuptools.packages.find]
 include = ["nova*"]

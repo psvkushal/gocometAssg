@@ -2,8 +2,8 @@
 
 from nova.config import Settings
 from nova.documents import DocumentInput
-from nova.model import ModelProvider, ModelRequest
-from nova.prompts import EXTRACTION_INSTRUCTIONS
+from nova.models.base import ModelProvider, ModelRequest
+from nova.agents.prompts import EXTRACTION_INSTRUCTIONS
 from nova.schemas import ExtractionResult
 
 

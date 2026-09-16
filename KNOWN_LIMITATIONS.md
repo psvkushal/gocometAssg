@@ -6,8 +6,67 @@ scope. Part 2 of the assignment remains excluded.
 
 Currently, configuration, stage output schemas, document/rule loading, the Gemini
 Extractor, Validator service, and deterministic Router are implemented.
-Orchestration, storage, and UI are still upcoming work within the agreed scope.
+The LangGraph core-stage workflow and durable SQLite checkpoints are implemented.
+Queryable SQLite result storage and a bounded command-line question interface
+are implemented, along with a minimal Streamlit operator UI.
 Behaviors described below as planned are not yet implemented.
+
+## Operator UI
+
+The local Streamlit screen accepts one document, editable natural-language rules,
+and explicit process/load/resume actions. New runs receive UUIDs automatically
+from `PipelineInput`, including runs created outside the UI. It shows saved
+stage outputs, original-document download, decisions, amendment drafts, and the
+supported stored-result queries. Processing failures are surfaced without raw
+provider payloads; partial outputs remain visible when checkpoints are available.
+The initial UI shows a running indicator and the saved stage after execution,
+not live per-stage progress. There is no authentication, multi-user isolation,
+run browser, inline PDF viewer, or email sending.
+
+UI tests use Streamlit AppTest with a fake model provider to exercise upload,
+processing, query, and failure/resume flows. Live model quality and browser-level
+visual behavior remain unverified. Rule edits affect new runs only; resume uses
+the original saved rules and document.
+
+## Pipeline persistence and recovery
+
+The checkpointed graph runs Extractor -> Validator -> Router -> Storage.
+It carries a run ID, input document/rules, completed stage outputs, and
+the last completed stage. State can be serialized, and streaming exposes stage
+updates. Technical errors propagate and stop downstream execution; the graph
+does not add retries on top of provider retries.
+
+`open_pipeline` connects a SQLite checkpointer. Its start/resume helpers use the
+run ID as the LangGraph thread ID, save checkpoints synchronously between stages,
+and reject starting an existing run. Resume uses saved document/rule inputs and
+completed outputs; completed runs return their saved result without model calls.
+Failed task details can be inspected from the persisted snapshot.
+
+Recovery is at stage boundaries, not exactly-once model execution. A process exit
+after an API response but before its checkpoint can require repeating that stage.
+Tests reopen the database and recreate services after exceptions; hard process
+termination and power-loss scenarios have not been tested. Only one local caller
+should operate on a run at a time; start's duplicate-ID check is not a concurrent
+reservation. Resume uses the currently supplied services, so model/configuration
+version pinning and migrations are not implemented. Exact SDK retry counts are
+not yet recorded; task errors and completed stage outputs are persisted.
+
+The Storage stage writes a separate `review_results` table in the same database.
+It saves all three outcomes, the rules used, extraction and validation results,
+decision/reason/draft, filename, mismatch presence, and a UTC save timestamp.
+The run ID links back to the original document bytes in checkpoints. Repeated
+identical saves do not duplicate or overwrite a result; conflicting results for
+an existing run ID are rejected. Storage failures leave that stage resumable.
+The query interface supports the four question types in the brief using fixed
+read-only SQL templates. It answers across all stored completed results; date
+ranges, customer filters, arbitrary question phrasing, and in-progress/failed-run
+queries are not supported. Unsupported questions fail explicitly rather than
+silently dropping filters. Field-frequency counts use exact saved field labels
+and count each field once per document with a mismatch; aliases are not merged.
+Uncertainty is separate from mismatch. No query model or generated SQL is used.
+
+Checkpoints completed under the earlier three-stage graph are not automatically
+backfilled into result tables. No checkpoint/schema migration tooling exists yet.
 
 ## Extractor verification
 
@@ -28,7 +87,8 @@ configurable; there is no automatic model fallback.
 The request has a configurable per-attempt timeout and output-token budget.
 Transient HTTP failures and SDK-supported timeout/connection failures may retry
 within the configured attempt limit. Malformed, blocked, or truncated output
-fails without re-extraction. Error/checkpoint persistence is pending orchestration.
+fails without automatic re-extraction. With SQLite checkpointing enabled, failed
+task errors are retained and an explicit resume can retry the failed stage.
 
 ## Customer rules requiring information absent from extraction
 
