@@ -205,7 +205,7 @@ validator. Strict JSON schema constrains shape, not these semantic invariants.
 The comparison records failures; it does not silently coerce or retry them.
 Prompt/rule separation should be evaluated as a separate change before relying
 on nano. Company-name whitespace and incidental punctuation tolerance remain
-unspecified. See `docs/technical-writeup.md` for comparison scope/results.
+unspecified. See `docs/experimentation.md` for comparison scope/results.
 
 The saved-document selector scans checkpoint history and lists runs from the
 configured database only. Separate live-test databases are not merged into the
